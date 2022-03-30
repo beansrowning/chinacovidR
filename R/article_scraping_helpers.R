@@ -10,7 +10,7 @@ cn_article_scrape <- function(href) {
   article_content <- page %>%
     html_elements("div.art") %>%
     html_elements("div.art-text") %>%
-    html_text()
+    html_text2()
 
   return(article_content)
 }
