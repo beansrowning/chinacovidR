@@ -11,7 +11,7 @@ It's heuristic, and may still return a try-error that
 must be handled downstream. Ideally I'd use OOP and handle
 this at the app level instead of the request level.}
 \usage{
-read_page(page_url, max_wait = 20)
+read_page(page_url, max_wait = 30)
 }
 \arguments{
 \item{page_url}{(character) A URL we want to read}
