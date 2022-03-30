@@ -3,6 +3,7 @@
 #' This recurses over a dataframe that contains links to Daily Bulletins
 #' and reads them in (optionally in parallel). It also ignores any that have already been read in previously.
 #' @import parallel
+#' @export
 pull_nhc_article_content <- function(article_links_df, n_workers = 0L) {
   # If we supply > 0 workers, spin up cluster
   if (n_workers > 0L) {
