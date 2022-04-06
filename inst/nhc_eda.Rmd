@@ -1,0 +1,105 @@
+---
+title: "NHC Article EDA"
+author: Sean Browning (sbrowning <a> cdc <punto> gov)
+date: Mar 30, 2022
+output: 
+    html_document:
+        df_print: tibble
+        code_folding: hide
+---
+
+```{r lib, include = FALSE}
+library(devtools)
+library(dplyr)
+library(readr)
+library(stringr)
+```
+
+```{r read in}
+# Read in latest data pull
+raw_data <- read_csv("latest_nhc_data.csv")
+
+print(raw_data)
+```
+
+```{r funcs}
+# WIP Functions I'll probably include in the package
+# once I'm done
+para_preclean <- function(x) {
+  # # Remove normal line returns
+  # out <- gsub("\n", "", x)
+  # the apostrophe in Xi'an and others that throws weird errors
+  out <- gsub("\u0092", "'", x)
+
+  return(out)
+}
+
+para_split <- function(x) {
+  # Split on carriage returns
+  splits <- strsplit(x, "\n")
+  # Remove empty sets
+  out <- lapply(splits, function(x) x[x != ""])
+
+  return(out)
+}
+```
+
+## Investigating "Archetypes"
+
+I'll try just splitting each article by carriage return.
+
+Then, I take the oldest and latest example of each "article type" by paragraph count
+where n_content shows how many bulletins had the same number of paragraphs (n_para)
+So we can see if there was an iterative change in design over time or if they're
+interspersed.
+
+Ideally, what we see is a linear (or at least consistent) usage of a particular type over time
+
+```{r paragraph investigation}
+para_summary_df <- raw_data %>%
+  mutate(
+    content = para_preclean(content),
+    para_splits = para_split(content),
+    n_para = vapply(para_splits, length, integer(1))
+  ) %>%
+  group_by(n_para) %>%
+  mutate(n_content = n()) %>%
+  arrange(desc(date)) %>%
+  filter(date %in% range(date)) %>%
+  ungroup()
+
+print(para_summary_df)
+```
+
+Not exactly as expected, but there is a pattern, and the vast majority can be split into 5 paragraphs.
+
+That style of bulletin apparently first began in 2/14/2020, so that's positive.
+We could set an initial value for each region and just write a parser for those bulletins and ignore the rest for the most part.
+
+## Writing a parser for the primary
+
+Let's take a random bulletin and get the data into tabular shape.
+
+```{r select a bulletin to parse}
+to_parse <- raw_data %>%
+  mutate(
+    content = para_preclean(content),
+    para_splits = para_split(content),
+    n_para = vapply(para_splits, length, integer(1))
+  ) %>%
+  filter(n_para == 5) %>%
+  arrange(desc(date)) %>%
+  slice(1)
+
+cat(to_parse$content)
+```
+
+The easiest thing to do here is probably to latch onto "in" and then use the right side as the name,
+and the left side numbers as the value.
+
+```{r first pass regex}
+first_para <- to_parse$para_splits[[1]][1]
+
+str_match_all(first_para, "(([\\d,]*) in ([^\\d,]*) ([,\\)]*|and)*)")
+```
+
