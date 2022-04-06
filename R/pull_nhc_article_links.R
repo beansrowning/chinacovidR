@@ -25,7 +25,7 @@ pull_nhc_article_links <- function(root_url = "http://en.nhc.gov.cn", previous_r
   if (!is.null(previous_run)) {
     prev_run_data <- read.csv(previous_run)
     prev_run_data[["date"]] <- as.Date(prev_run_data[["date"]])
-
+    prev_run_data[["read_time"]] <- as.POSIXct(prev_run_data[["read_time"]])
     prev_latest_date <- max(prev_run_data[["date"]])
     page_latest_date <- max(first_page_dates)
 
