@@ -4,3 +4,5 @@
 .Ruserdata
 # For now, ignore data files
 *.csv
+# Virtual env
+inst/venv/*
