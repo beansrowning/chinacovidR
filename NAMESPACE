@@ -3,4 +3,5 @@
 export(pull_nhc_article_content)
 export(pull_nhc_article_links)
 import(parallel)
+import(reticulate)
 import(rvest)
